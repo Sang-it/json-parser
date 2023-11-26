@@ -2,9 +2,9 @@ module Main where
 
 import           System.Environment            (getArgs)
 import           Text.ParserCombinators.Parsec as P (Parser, char, digit, many,
-                                                     many1, noneOf, parse,
-                                                     sepBy, spaces, string, try,
-                                                     (<|>))
+                                                     many1, noneOf, oneOf,
+                                                     parse, sepBy, spaces,
+                                                     string, try, (<|>))
 
 data JsonValue = JsonNull
                | JsonBool Bool
@@ -28,10 +28,24 @@ parseInteger = do
     i <- P.many1 P.digit
     return $ JsonNumber (read i)
 
+parseEscapeCharacter :: P.Parser Char
+parseEscapeCharacter = do
+    P.char '\\'
+    c <- P.oneOf "\"\\/bfnrt"
+    return $ case c of
+        '"'  -> '"'
+        '\\' -> '\\'
+        '/'  -> '/'
+        'b'  -> '\b'
+        'f'  -> '\f'
+        'n'  -> '\n'
+        'r'  -> '\r'
+        't'  -> '\t'
+
 parseString :: P.Parser JsonValue
 parseString = do
     P.char '"'
-    s <- P.many (P.noneOf "\"")
+    s <- P.many (parseEscapeCharacter <|> P.noneOf "\"")
     P.char '"'
     return $ JsonString s
 
@@ -83,6 +97,4 @@ parseInput = do
 main :: IO ()
 main = do
     args <- getArgs
-    if null args
-        then parseInput
-        else parseFile (head args)
+    if null args then parseInput else parseFile (head args)
