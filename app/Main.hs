@@ -1,27 +1,40 @@
 module Main where
 
-import           System.Environment            (getArgs)
-import           Text.ParserCombinators.Parsec as P (Parser, char, digit, many,
-                                                     many1, noneOf, oneOf,
-                                                     parse, sepBy, spaces,
-                                                     string, try, (<|>))
+import System.Environment (getArgs)
+import Text.ParserCombinators.Parsec as P
+    ( Parser,
+      char,
+      digit,
+      many,
+      many1,
+      noneOf,
+      oneOf,
+      parse,
+      sepBy,
+      spaces,
+      string,
+      try,
+      (<|>),
+    )
 
-data JsonValue = JsonNull
-               | JsonBool Bool
-               | JsonNumber Integer
-               | JsonString String
-               | JsonArray [JsonValue]
-               | JsonObject [(String, JsonValue)]
-               deriving (Show, Eq, Ord)
+data JsonValue
+    = JsonNull
+    | JsonBool Bool
+    | JsonNumber Integer
+    | JsonString String
+    | JsonArray [JsonValue]
+    | JsonObject [(String, JsonValue)]
+    deriving (Show, Eq, Ord)
 
 parseNull :: P.Parser JsonValue
 parseNull = P.string "null" >> return JsonNull
 
 parseBool :: P.Parser JsonValue
 parseBool = do
-  b <- P.try (P.string "true" >> return True)
-       <|> (P.string "false" >> return False)
-  return $ JsonBool b
+    b <-
+        P.try (P.string "true" >> return True)
+            <|> (P.string "false" >> return False)
+    return $ JsonBool b
 
 parseInteger :: P.Parser JsonValue
 parseInteger = do
@@ -33,14 +46,14 @@ parseEscapeCharacter = do
     P.char '\\'
     c <- P.oneOf "\"\\/bfnrt"
     return $ case c of
-        '"'  -> '"'
+        '"' -> '"'
         '\\' -> '\\'
-        '/'  -> '/'
-        'b'  -> '\b'
-        'f'  -> '\f'
-        'n'  -> '\n'
-        'r'  -> '\r'
-        't'  -> '\t'
+        '/' -> '/'
+        'b' -> '\b'
+        'f' -> '\f'
+        'n' -> '\n'
+        'r' -> '\r'
+        't' -> '\t'
 
 parseString :: P.Parser JsonValue
 parseString = do
@@ -74,17 +87,21 @@ parseField = do
 
 parseJson :: P.Parser JsonValue
 parseJson =
-    P.spaces *>
-    parseNull <|> parseBool <|> parseInteger <|> parseString <|> parseArray <|> parseObject <*
     P.spaces
-
+        *> parseNull
+        <|> parseBool
+        <|> parseInteger
+        <|> parseString
+        <|> parseArray
+        <|> parseObject
+        <* P.spaces
 
 parseFile :: String -> IO ()
 parseFile filename = do
     input <- readFile filename
     case P.parse parseJson "" input of
         Right json -> print json
-        Left err   -> print err
+        Left err -> print err
 
 parseInput :: IO ()
 parseInput = do
@@ -92,7 +109,7 @@ parseInput = do
     input <- getLine
     case P.parse parseJson "" input of
         Right json -> print json
-        Left err   -> print err
+        Left err -> print err
 
 main :: IO ()
 main = do
