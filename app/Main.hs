@@ -1,21 +1,21 @@
 module Main where
 
 import System.Environment (getArgs)
-import Text.ParserCombinators.Parsec as P
-    ( Parser,
-      char,
-      digit,
-      many,
-      many1,
-      noneOf,
-      oneOf,
-      parse,
-      sepBy,
-      spaces,
-      string,
-      try,
-      (<|>),
-    )
+import Text.ParserCombinators.Parsec as P (
+    Parser,
+    char,
+    digit,
+    many,
+    many1,
+    noneOf,
+    oneOf,
+    parse,
+    sepBy,
+    spaces,
+    string,
+    try,
+    (<|>),
+ )
 
 data JsonValue
     = JsonNull
@@ -89,11 +89,11 @@ parseJson :: P.Parser JsonValue
 parseJson =
     P.spaces
         *> parseNull
-        <|> parseBool
-        <|> parseInteger
-        <|> parseString
-        <|> parseArray
-        <|> parseObject
+            <|> parseBool
+            <|> parseInteger
+            <|> parseString
+            <|> parseArray
+            <|> parseObject
         <* P.spaces
 
 parseFile :: String -> IO ()
